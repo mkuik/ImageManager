@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="50dp">
+
+        <CheckBox
+            android:text="  Resolution"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/checkBox"
+            android:layout_weight="1"
+            style="@android:style/Widget.DeviceDefault.CompoundButton.CheckBox"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
+
+        <EditText
+            android:layout_height="wrap_content"
+            android:inputType="numberSigned"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:layout_weight="0"
+            android:hint="width"
+            android:layout_width="80dp"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:text="X"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/textView3"
+            android:layout_weight="0"
+            android:gravity="center"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
+
+        <EditText
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="numberSigned"
+            android:ems="10"
+            android:id="@+id/editText2"
+            android:layout_weight="0"
+            android:hint="height"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_weight="1">
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/checkBox2"
+            android:layout_weight="0"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
+
+        <view
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="kuik.matthijs.imagemanager.ColorSelector.Hue"
+            android:id="@+id/view"
+            android:layout_weight="0" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_weight="1">
+
+        <CheckBox
+            android:text=""
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/checkBox3"
+            android:layout_weight="0"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />/>
+
+        <view
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="kuik.matthijs.imagemanager.ColorSelector.Saturation"
+            android:id="@+id/view2"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</LinearLayout>

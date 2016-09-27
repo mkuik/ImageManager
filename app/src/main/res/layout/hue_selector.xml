@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ColorSelector.Hue">
+
+    <view
+        android:id="@+id/hue_bar"
+        android:layout_width="match_parent"
+        class="kuik.matthijs.imagemanager.ColorSelector.Bar"
+        android:layout_height="6dp"
+        android:layout_centerInParent="true">
+    </view>
+
+    <view
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        class="kuik.matthijs.imagemanager.ColorSelector.Cursor"
+        android:id="@+id/hue_cursor"
+        android:layout_centerVertical="true"/>
+
+</RelativeLayout>
