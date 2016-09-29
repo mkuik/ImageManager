@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:paddingLeft="16dp">
+
+    <view
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="kuik.matthijs.imagemanager.Widget.Filter"
+        android:id="@+id/filter"
+        android:layout_weight="1" />
+
+    <ImageButton
+        android:layout_height="match_parent"
+        app:srcCompat="@drawable/ic_clear"
+        android:id="@+id/button_clear"
+        android:background="?android:attr/selectableItemBackground"
+        android:layout_width="50dp" />
+</LinearLayout>
