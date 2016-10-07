@@ -1,6 +1,6 @@
 package kuik.matthijs.imagemanager.Widget;
 
-import kuik.matthijs.imagemanager.FilterType;
+import kuik.matthijs.imagemanager.DataTypes.FilterType;
 
 /**
  * Created by Matthijs on 29/09/2016.

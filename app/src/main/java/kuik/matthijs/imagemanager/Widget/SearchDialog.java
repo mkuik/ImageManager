@@ -9,7 +9,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import kuik.matthijs.imagemanager.Adapter.FilterAdapter;
-import kuik.matthijs.imagemanager.FilterType;
+import kuik.matthijs.imagemanager.DataTypes.FilterType;
 import kuik.matthijs.imagemanager.R;
 
 /**

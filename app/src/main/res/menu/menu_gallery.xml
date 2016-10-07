@@ -8,6 +8,10 @@
         android:title="Search"
         app:showAsAction="ifRoom"
         android:id="@+id/menu_action_search" />
+    <item android:title="Add to Libary"
+        android:id="@+id/menu_action_add"
+        android:icon="@drawable/ic_add"
+        android:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_action_settings"
         android:orderInCategory="100"

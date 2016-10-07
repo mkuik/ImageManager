@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import kuik.matthijs.imagemanager.FilterType;
+import kuik.matthijs.imagemanager.DataTypes.FilterType;
 import kuik.matthijs.imagemanager.UserInput.Hue;
 import kuik.matthijs.imagemanager.UserInput.Saturation;
 import kuik.matthijs.imagemanager.UserInput.Size;
