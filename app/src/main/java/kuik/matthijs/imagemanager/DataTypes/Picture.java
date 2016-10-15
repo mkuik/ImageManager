@@ -22,17 +22,16 @@ import java.util.List;
 
 public class Picture {
 
-    final static int THUMBSIZE = 200;
+    final static int THUMBSIZE = 60;
 
-    Size size;
-    Uri source;
-    Context context;
-    List<Hue> colors = new ArrayList<>();
+    private Size size;
+    private Uri source;
+    private Context context;
+    private List<Hue> colors = new ArrayList<>();
 
-    public Picture(Context context, Uri uri) throws IOException {
+    public Picture(Context context, Uri uri) {
         source = uri;
         this.context = context;
-        init();
     }
 
     public Bitmap getThumbnail() throws IOException {
@@ -46,16 +45,21 @@ public class Picture {
         inputStream = context.getContentResolver().openInputStream(source);
         options.inJustDecodeBounds = false;
         options.inSampleSize = calculateInSampleSize(options, THUMBSIZE, THUMBSIZE);
-        BitmapFactory.decodeStream(inputStream, null, options);
+        final Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
         inputStream.close();
 
         Log.d("Thumbnail size", "" + options.outWidth + "x" + options.outHeight);
-        return options.inBitmap;
+        return bitmap;
     }
 
     public Bitmap getBitmap() throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), source);
-        size = new Size(bitmap.getWidth(), bitmap.getHeight());
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        InputStream inputStream = context.getContentResolver().openInputStream(source);
+        options.inJustDecodeBounds = false;
+        final Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+        inputStream.close();
+
+        Log.d("Bitmap size", "" + options.outWidth + "x" + options.outHeight);
         return bitmap;
     }
 
@@ -67,7 +71,11 @@ public class Picture {
         return colors;
     }
 
-    private void init() throws IOException {
+    public Uri getSource() {
+        return source;
+    }
+
+    public void init() throws IOException {
         initDimensions();
         Bitmap bitmap = getThumbnail();
 

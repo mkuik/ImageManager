@@ -2,7 +2,7 @@
     <string name="app_name">ImageManager</string>
     <string name="action_settings">Settings</string>
     <string name="kuik_matthijs_imagemanager_galleryactivityfragment">kuik.matthijs.imagemanager.GalleryActivityFragment</string>
-    <string name="title_activity_gallery">GalleryActivity</string>
+    <string name="title_activity_gallery">Gallery</string>
     <string name="title_activity_gallery_filter">Filter</string>
 
     <string name="large_text">

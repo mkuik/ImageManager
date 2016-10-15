@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import kuik.matthijs.imagemanager.DataTypes.Picture;
 import kuik.matthijs.imagemanager.Widget.GalleryItem;
 import kuik.matthijs.imagemanager.R;
 
@@ -22,25 +23,24 @@ import kuik.matthijs.imagemanager.R;
  * Created by Matthijs Kuik on 9/26/2016.
  */
 
-public class GalleryGridViewAdapter  extends ArrayAdapter<GalleryItem> {
+public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
 
     private Context mContext;
     private int layoutResourceId;
-    private ArrayList<GalleryItem> mGridData = new ArrayList<GalleryItem>();
+    private ArrayList<Picture> mGridData = new ArrayList<>();
 
-    public GalleryGridViewAdapter(Context mContext, int layoutResourceId, ArrayList<GalleryItem> mGridData) {
+    public GalleryGridViewAdapter(Context mContext, int layoutResourceId, ArrayList<Picture> mGridData) {
         super(mContext, layoutResourceId, mGridData);
         this.layoutResourceId = layoutResourceId;
         this.mContext = mContext;
         this.mGridData = mGridData;
     }
 
-
     /**
      * Updates grid data and refresh grid items.
      * @param mGridData
      */
-    public void setGridData(ArrayList<GalleryItem> mGridData) {
+    public void setGridData(ArrayList<Picture> mGridData) {
         this.mGridData = mGridData;
         notifyDataSetChanged();
     }
@@ -62,10 +62,9 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<GalleryItem> {
             holder = (ViewHolder) row.getTag();
         }
 
-        GalleryItem item = mGridData.get(position);
-        holder.titleTextView.setText(Html.fromHtml(item.getTitle()));
-
-        Picasso.with(mContext).load(item.getImage()).into(holder.imageView);
+        final Picture item = mGridData.get(position);
+        holder.titleTextView.setText(item.getSource().toString());
+        Picasso.with(mContext).load(item.getSource()).into(holder.imageView);
         return row;
     }
 

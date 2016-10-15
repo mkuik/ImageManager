@@ -22,10 +22,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import kuik.matthijs.imagemanager.Adapter.GalleryGridViewAdapter;
 import kuik.matthijs.imagemanager.DataTypes.Picture;
 import kuik.matthijs.imagemanager.R;
 import kuik.matthijs.imagemanager.Widget.SearchDialog;
@@ -33,6 +36,8 @@ import kuik.matthijs.imagemanager.Widget.SearchDialog;
 public class GalleryActivity extends AppCompatActivity {
 
     public static final int IMAGE_FROM_STORAGE = 400;
+    private ArrayList<Picture> data = new ArrayList<>();
+    private GalleryGridViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,10 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        GridView galleryGrid = (GridView) findViewById(R.id.gridView);
+        adapter = new GalleryGridViewAdapter(this, R.layout.gallery_item, data);
+        galleryGrid.setAdapter(adapter);
     }
 
     @Override
@@ -91,34 +100,9 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     public void addImage(final Uri uri) {
-        AsyncTask<Uri, Void, Picture> task = new AsyncTask<Uri, Void, Picture>() {
-            @Override
-            protected Picture doInBackground(Uri... uris) {
-                try {
-                    return new Picture(GalleryActivity.this, uris[0]);
-                } catch (IOException e) {
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(Picture picture) {
-                super.onPostExecute(picture);
-                if (picture != null) {
-                    Toast.makeText(GalleryActivity.this, picture.toString(), Toast.LENGTH_LONG).show();
-                    Log.d("Colors", "" + picture.getColors());
-                }
-                else
-                    Toast.makeText(GalleryActivity.this, "file not found", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                Toast.makeText(GalleryActivity.this, uri.toString(), Toast.LENGTH_SHORT).show();
-            }
-        };
-        task.execute(uri);
+        final Picture picture = new Picture(GalleryActivity.this, uri);
+        data.add(picture);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -146,8 +130,8 @@ public class GalleryActivity extends AppCompatActivity {
 
     protected void getImageFromGallery() {
         if (hasStoragePermissions()) {
-            Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(i, IMAGE_FROM_STORAGE);
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(intent, IMAGE_FROM_STORAGE);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     IMAGE_FROM_STORAGE);
