@@ -28,6 +28,7 @@ public class Picture {
     private Uri source;
     private Context context;
     private List<Hue> colors = new ArrayList<>();
+    private short maxCount = 0;
 
     public Picture(Context context, Uri uri) {
         source = uri;
@@ -77,25 +78,29 @@ public class Picture {
 
     public void init() throws IOException {
         initDimensions();
-        Bitmap bitmap = getThumbnail();
+        if (colors.isEmpty()) {
+            Bitmap bitmap = getThumbnail();
 
-        final short[] hue_histogram = new short[360];
-        for (int y = 0; y != bitmap.getHeight(); ++y) {
-            for (int x = 0; x != bitmap.getWidth(); ++x) {
-                final int pixel = bitmap.getPixel(x, y);
-                final float[] hsv = new float[3];
-                Color.colorToHSV(pixel, hsv);
-                final short hue = (short) hsv[0];
-                hue_histogram[hue]++;
+            final float[] hue_histogram = new float[360];
+            for (int y = 0; y != bitmap.getHeight(); ++y) {
+                for (int x = 0; x != bitmap.getWidth(); ++x) {
+                    final int pixel = bitmap.getPixel(x, y);
+                    final float[] hsv = new float[3];
+                    Color.colorToHSV(pixel, hsv);
+                    final float hue = hsv[0];
+                    final float saturation = hsv[1];
+                    final float value = hsv[2];
+                    hue_histogram[(int)hue] += value * saturation;
+                }
             }
-        }
-        for (short i = 0; i != hue_histogram.length; ++i) {
-            short count = hue_histogram[i];
-            if (count > 0) {
-                colors.add(new Hue(i, count));
+            for (short i = 0; i != hue_histogram.length; ++i) {
+                float count = hue_histogram[i];
+                if (count > 0) {
+                    colors.add(new Hue(i, (short)count));
+                }
             }
+            Collections.sort(colors, new Hue.SortByCount());
         }
-        Collections.sort(colors, new Hue.SortByCount());
     }
 
     private void initDimensions() throws IOException {

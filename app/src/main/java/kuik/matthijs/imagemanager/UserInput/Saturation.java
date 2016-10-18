@@ -15,35 +15,34 @@ public class Saturation extends Seekbar {
 
     public Saturation(Context context) {
         super(context);
-        init(null, 0);
     }
 
     public Saturation(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(attrs, 0);
     }
 
     public Saturation(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(attrs, defStyle);
     }
 
-    private void init(AttributeSet attrs, int defStyle) {
+    protected void init(AttributeSet attrs, int defStyle) {
+        super.init(attrs, defStyle);
         getBar().setBackground(Bar.BW);
     }
 
-    public float getSaturation() {
-        return (getValue() - getPadding()) / (getWidth() - getPadding() * 2) * 255;
-    }
-
-    public void setSaturation(float saturation) {
-
+    public float getValue() {
+        return (super.getValue() - getPadding()) / (getWidth() - getPadding() * 2) * 255;
     }
 
     @Override
-    protected void setValue(float value) {
+    public void setValue(float value) {
         super.setValue(value);
-        final int saturation = 255 - (int) getSaturation();
+        final int saturation = 255 - (int) getValue();
         getCursor().setColor(Color.rgb(saturation, saturation, saturation));
+    }
+
+    @Override
+    public String toString() {
+        return "Saturation{" + getValue() + "}";
     }
 }

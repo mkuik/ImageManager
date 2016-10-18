@@ -2,18 +2,13 @@ package kuik.matthijs.imagemanager.Activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
-import android.content.UriMatcher;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,14 +18,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import kuik.matthijs.imagemanager.Adapter.GalleryGridViewAdapter;
+import kuik.matthijs.imagemanager.DataTypes.FilterHolder;
 import kuik.matthijs.imagemanager.DataTypes.Picture;
 import kuik.matthijs.imagemanager.R;
+import kuik.matthijs.imagemanager.UserInput.Parts.ValueContainer;
 import kuik.matthijs.imagemanager.Widget.SearchDialog;
 
 public class GalleryActivity extends AppCompatActivity {
@@ -59,29 +54,29 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     public void showSearchDialog() {
-
-        // custom dialog
-        final Dialog dialog = new SearchDialog(this);
-
+        final SearchDialog dialog = new SearchDialog(this);
         Button buttonOk = (Button) dialog.findViewById(R.id.button_ok);
-        // if button is clicked, close the custom dialog
         buttonOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                search(dialog.getSearchQuery());
             }
         });
-
         Button buttonCancel = (Button) dialog.findViewById(R.id.button_cancel);
-        // if button is clicked, close the custom dialog
         buttonCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
             }
         });
-
         dialog.show();
+    }
+
+    private void search(FilterHolder[] query) {
+        for (FilterHolder filterItem : query) {
+            Log.i("search", filterItem.toString());
+        }
     }
 
     @Override
@@ -103,6 +98,7 @@ public class GalleryActivity extends AppCompatActivity {
         final Picture picture = new Picture(GalleryActivity.this, uri);
         data.add(picture);
         adapter.notifyDataSetChanged();
+
     }
 
     @Override

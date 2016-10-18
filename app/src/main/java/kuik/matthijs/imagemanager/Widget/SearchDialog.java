@@ -9,8 +9,13 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import kuik.matthijs.imagemanager.Adapter.FilterAdapter;
+import kuik.matthijs.imagemanager.DataTypes.FilterHolder;
 import kuik.matthijs.imagemanager.DataTypes.FilterType;
 import kuik.matthijs.imagemanager.R;
+import kuik.matthijs.imagemanager.UserInput.Hue;
+import kuik.matthijs.imagemanager.UserInput.Parts.ValueContainer;
+import kuik.matthijs.imagemanager.UserInput.Saturation;
+import kuik.matthijs.imagemanager.UserInput.Size;
 
 /**
  * Created by Matthijs on 28/09/2016.
@@ -39,7 +44,7 @@ public class SearchDialog extends Dialog implements View.OnClickListener {
     private void init(Context context) {
         setContentView(R.layout.search_dialog);
         listView = (ListView) findViewById(R.id.filter_listview);
-        adapter = new FilterAdapter(context, R.layout.filter_row, new ArrayList<FilterItem>());
+        adapter = new FilterAdapter(context, R.layout.filter_row, new ArrayList<FilterHolder>());
         listView.setAdapter(adapter);
 
         ImageButton size = (ImageButton) findViewById(R.id.button_size);
@@ -51,19 +56,28 @@ public class SearchDialog extends Dialog implements View.OnClickListener {
         bw.setOnClickListener(this);
     }
 
+    public FilterHolder[] getSearchQuery() {
+        FilterHolder[] query = new FilterHolder[adapter.getCount()];
+        for (int i = 0; i != adapter.getCount(); ++i) {
+            FilterHolder filter = adapter.getItem(i);
+            query[i] = filter;
+        }
+        return query;
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_size:
-                adapter.add(new FilterItem(FilterType.SIZE, 0, 0));
+                adapter.add(new FilterHolder(FilterType.SIZE));
                 adapter.notifyDataSetChanged();
                 break;
             case R.id.button_color:
-                adapter.add(new FilterItem(FilterType.HUE, 0, 0));
+                adapter.add(new FilterHolder(FilterType.HUE));
                 adapter.notifyDataSetChanged();
                 break;
             case R.id.button_saturation:
-                adapter.add(new FilterItem(FilterType.BW, 0, 0));
+                adapter.add(new FilterHolder(FilterType.BW));
                 adapter.notifyDataSetChanged();
                 break;
         }

@@ -4,36 +4,33 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import kuik.matthijs.imagemanager.R;
 
 /**
  * TODO: document your custom view class.
  */
-public class Seekbar extends LinearLayout implements View.OnTouchListener, View.OnLayoutChangeListener {
+public class Seekbar extends ValueContainer implements View.OnTouchListener, View.OnLayoutChangeListener {
 
     private Cursor cursor;
     private Bar bar;
     private int padding = 25;
-    private float value = padding;
+    private float value = 0;
 
     public Seekbar(Context context) {
         super(context);
-        init(null, 0);
     }
 
     public Seekbar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(attrs, 0);
     }
 
     public Seekbar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(attrs, defStyle);
     }
 
-    private void init(AttributeSet attrs, int defStyle) {
+    protected void init(AttributeSet attrs, int defStyle) {
+        super.init(attrs, defStyle);
         inflate(getContext(), R.layout.seekbar, this);
 
         bar = (Bar) findViewById(R.id.hue_bar);
@@ -44,6 +41,9 @@ public class Seekbar extends LinearLayout implements View.OnTouchListener, View.
 
         setPadding(padding);
         addOnLayoutChangeListener(this);
+
+
+        setValue(padding);
     }
 
     protected void setPadding(int padding) {
@@ -74,21 +74,33 @@ public class Seekbar extends LinearLayout implements View.OnTouchListener, View.
         return bar;
     }
 
-    protected float getValue() {
-        return value;
-    }
-
     protected int getPadding() {
         return padding;
     }
 
-    protected void setValue(float value) {
+    public void setValue(float value) {
         this.value = value;
         cursor.setX(value - cursor.getWidth() / 2);
+        notifyValueChanged();
+    }
+
+    @Override
+    public float getOtherValue() {
+        return 0;
+    }
+
+    @Override
+    public float getValue() {
+        return value;
+    }
+
+    @Override
+    public void setOtherValue(float otherValue) {
+
     }
 
     @Override
     public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-        setValue(value);
+        setValue(getValue());
     }
 }

@@ -10,13 +10,36 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"/>
 
-        <TextView
-            android:id="@+id/grid_item_title"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="3dp"
-            android:textSize="12sp"
-            android:textColor="@color/white"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:gravity="bottom">
+
+                <TextView
+                    android:id="@+id/grid_item_title"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/white"
+                    android:layout_alignParentBottom="true"
+                    android:layout_weight="1"
+                    android:layout_width="0dp" />
+
+                <view
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    class="kuik.matthijs.imagemanager.Widget.HueGraph"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:id="@+id/graph"
+                    android:layout_margin="4dp"
+                    android:background="@android:color/background_dark"
+                    android:layout_weight="0" />
+        </LinearLayout>
 
 </RelativeLayout>

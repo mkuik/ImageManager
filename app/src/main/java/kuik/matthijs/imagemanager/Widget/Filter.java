@@ -53,17 +53,41 @@ public class Filter extends FrameLayout {
         }
     }
 
-    public void setValues(float A, float B) {
-        if (view instanceof Hue) {
-            Hue hue = (Hue) view;
-            hue.setHue(A);
-        } else if (view instanceof Saturation) {
-            Saturation saturation = (Saturation) view;
-            saturation.setSaturation(A);
-        } else if (view instanceof Size) {
+//    public void setValues(float A, float B) {
+//        if (view instanceof Hue) {
+//            Hue hue = (Hue) view;
+//            hue.setHue(A);
+//        } else if (view instanceof Saturation) {
+//            Saturation saturation = (Saturation) view;
+//            saturation.setSaturation(A);
+//        } else if (view instanceof Size) {
+//            Size size = (Size) view;
+//            size.setWidthInput((int) A);
+//            size.setHeightInput((int) B);
+//        }
+//    }
+//
+//    public float getValueA() {
+//        if (view instanceof Hue) {
+//            Hue hue = (Hue) view;
+//            return hue.getHue();
+//        } else if (view instanceof Saturation) {
+//            Saturation saturation = (Saturation) view;
+//            return saturation.getSaturation();
+//        } else if (view instanceof Size) {
+//            Size size = (Size) view;
+//            return size.getWidth();
+//        } else {
+//            return 0;
+//        }
+//    }
+
+    public float getValueB() {
+        if (view instanceof Size) {
             Size size = (Size) view;
-            size.setWidthInput((int) A);
-            size.setHeightInput((int) B);
+            return size.getHeight();
+        } else {
+            return 0;
         }
     }
 
