@@ -61,20 +61,22 @@ public class Size extends ValueContainer implements TextWatcher {
     }
 
     public int getWidthInput() {
-        return Integer.parseInt(width.getText().toString());
+        final String s = width.getText().toString();
+        return s.isEmpty() ? 0 : Integer.parseInt(s);
     }
 
     public int getHeightInput() {
-        return Integer.parseInt(height.getText().toString());
+        final String s = height.getText().toString();
+        return s.isEmpty() ? 0 : Integer.parseInt(s);
     }
 
     public void setWidthInput(int width) {
-        this.width.setText("" + width);
+        this.width.setText(width != 0 ? String.valueOf(width) : "");
         notifyValueChanged();
     }
 
     public void setHeightInput(int height) {
-        this.height.setText("" + height);
+        this.height.setText(height != 0 ? String.valueOf(height) : "");
         notifyValueChanged();
     }
 

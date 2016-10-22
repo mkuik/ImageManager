@@ -1,9 +1,14 @@
 package kuik.matthijs.imagemanager.UserInput.Parts;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.Space;
 
 import kuik.matthijs.imagemanager.R;
 
@@ -14,7 +19,7 @@ public class Seekbar extends ValueContainer implements View.OnTouchListener, Vie
 
     private Cursor cursor;
     private Bar bar;
-    private int padding = 25;
+    private int padding = 23;
     private float value = 0;
 
     public Seekbar(Context context) {
@@ -48,22 +53,17 @@ public class Seekbar extends ValueContainer implements View.OnTouchListener, Vie
 
     protected void setPadding(int padding) {
         this.padding = padding;
-        if (bar.getLayoutParams() instanceof MarginLayoutParams) {
-            MarginLayoutParams p = (MarginLayoutParams) bar.getLayoutParams();
-            p.setMargins(padding, 0, padding, 0);
-            bar.requestLayout();
-        }
     }
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        float x = motionEvent.getX();
-        if (x >= padding && x <= getWidth() - padding) {
-            setValue(x);
-            return true;
-        } else {
-            return false;
-        }
+        setValue(XToValue(motionEvent.getX()));
+        return true;
+    }
+
+    protected float XToValue(float x) {
+        final int barWidth = getBarWidth();
+        return (x / barWidth) - (padding / barWidth);
     }
 
     protected Cursor getCursor() {
@@ -78,20 +78,31 @@ public class Seekbar extends ValueContainer implements View.OnTouchListener, Vie
         return padding;
     }
 
+    @Override
+    public float getValue() {
+        return value;
+    }
+
     public void setValue(float value) {
-        this.value = value;
-        cursor.setX(value - cursor.getWidth() / 2);
+        Log.d("Seekbar", "v:"+value);
+        if (value >= 0 && value <= 1) {
+            this.value = value;
+        } else if (value < 0) {
+            this.value = 0;
+        } else {
+            this.value = 1;
+        }
+        cursor.setX(padding + this.value * getBarWidth() - cursor.getWidth() / 2);
         notifyValueChanged();
+    }
+
+    public int getBarWidth() {
+        return getWidth() - padding * 2;
     }
 
     @Override
     public float getOtherValue() {
         return 0;
-    }
-
-    @Override
-    public float getValue() {
-        return value;
     }
 
     @Override

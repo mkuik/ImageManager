@@ -29,10 +29,37 @@ public class Picture {
     private Context context;
     private List<Hue> colors = new ArrayList<>();
     private short maxCount = 0;
+    private String details = "";
 
     public Picture(Context context, Uri uri) {
         source = uri;
         this.context = context;
+    }
+
+    public double getHueDistance(short hue) {
+//        Log.i("Picture", "getHueDistance( " + hue + ")");
+        double maxScore = 0;
+        for (int i = 0; i != getColors().size(); ++i) {
+            Hue item = getColors().get(i);
+            double distance;
+            if (item.getHue() == hue) {
+                distance = 0;
+            } else if (item.getHue() < hue) {
+                distance = Math.min(hue - item.getHue(), 360 + item.getHue() - hue) / 360D;
+            } else {
+                distance = Math.min(item.getHue() - hue, 360 + hue - item.getHue()) / 360D;
+            }
+            double significance = item.getCount() / (double)maxCount;
+            double score = colorDeltaFormula(distance) * significance;
+//            Log.i("Picture", item.toString() + " distance:" + distance + " significance:" + significance + " score:" + score);
+            if (score > maxScore) maxScore = score;
+        }
+        Log.i("Picture", toString() + " score:" + maxScore);
+        return maxScore;
+    }
+
+    private double colorDeltaFormula(double x) {
+        return (1 - x) * 4 - 3;
     }
 
     public Bitmap getThumbnail() throws IOException {
@@ -80,6 +107,7 @@ public class Picture {
         initDimensions();
         if (colors.isEmpty()) {
             Bitmap bitmap = getThumbnail();
+            int sumScore = 0;
 
             final float[] hue_histogram = new float[360];
             for (int y = 0; y != bitmap.getHeight(); ++y) {
@@ -87,17 +115,17 @@ public class Picture {
                     final int pixel = bitmap.getPixel(x, y);
                     final float[] hsv = new float[3];
                     Color.colorToHSV(pixel, hsv);
-                    final float hue = hsv[0];
-                    final float saturation = hsv[1];
-                    final float value = hsv[2];
-                    hue_histogram[(int)hue] += value * saturation;
+                    final float score = hsv[1] * hsv[2];
+                    hue_histogram[(int) hsv[0]] += score;
+                    sumScore += score;
                 }
             }
             for (short i = 0; i != hue_histogram.length; ++i) {
-                float count = hue_histogram[i];
+                short count = (short)hue_histogram[i];
                 if (count > 0) {
-                    colors.add(new Hue(i, (short)count));
+                    colors.add(new Hue(i, count));
                 }
+                if (count > maxCount) maxCount = count;
             }
             Collections.sort(colors, new Hue.SortByCount());
         }
@@ -132,6 +160,14 @@ public class Picture {
         }
 
         return inSampleSize;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public String getDetails() {
+        return details;
     }
 
     @Override

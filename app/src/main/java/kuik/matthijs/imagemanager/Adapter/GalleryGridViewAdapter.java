@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import kuik.matthijs.imagemanager.DataTypes.Picture;
 import kuik.matthijs.imagemanager.Widget.GalleryItem;
@@ -60,6 +61,7 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
             row = inflater.inflate(layoutResourceId, parent, false);
             holder = new ViewHolder();
             holder.titleTextView = (TextView) row.findViewById(R.id.grid_item_title);
+            holder.details = (TextView) row.findViewById(R.id.details);
             holder.imageView = (ImageView) row.findViewById(R.id.grid_item_image);
             holder.graph = (HueGraph) row.findViewById(R.id.graph);
             row.setTag(holder);
@@ -68,7 +70,9 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
         }
 
         final Picture item = mGridData.get(position);
-        holder.titleTextView.setText(item.getSource().toString());
+        List<String> pathSegments = item.getSource().getPathSegments();
+        holder.titleTextView.setText(pathSegments.get(pathSegments.size() - 1));
+        holder.details.setText(item.getDetails());
         Picasso.with(mContext).load(item.getSource()).into(holder.imageView);
         new SetGraphTask(holder, item).execute();
 
@@ -104,6 +108,7 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
 
     static class ViewHolder {
         TextView titleTextView;
+        TextView details;
         ImageView imageView;
         HueGraph graph;
     }

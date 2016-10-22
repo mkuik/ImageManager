@@ -2,6 +2,9 @@ package kuik.matthijs.imagemanager.Activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -16,10 +19,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Locale;
 
 import kuik.matthijs.imagemanager.Adapter.GalleryGridViewAdapter;
 import kuik.matthijs.imagemanager.DataTypes.FilterHolder;
@@ -28,7 +36,7 @@ import kuik.matthijs.imagemanager.R;
 import kuik.matthijs.imagemanager.UserInput.Parts.ValueContainer;
 import kuik.matthijs.imagemanager.Widget.SearchDialog;
 
-public class GalleryActivity extends AppCompatActivity {
+public class GalleryActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener {
 
     public static final int IMAGE_FROM_STORAGE = 400;
     private ArrayList<Picture> data = new ArrayList<>();
@@ -44,6 +52,25 @@ public class GalleryActivity extends AppCompatActivity {
         GridView galleryGrid = (GridView) findViewById(R.id.gridView);
         adapter = new GalleryGridViewAdapter(this, R.layout.gallery_item, data);
         galleryGrid.setAdapter(adapter);
+        galleryGrid.setOnItemLongClickListener(this);
+    }
+
+    @Override
+    public boolean onItemLongClick(final AdapterView<?> adapterView, View view, final int i, long l) {
+        CharSequence colors[] = new CharSequence[] {"Remove"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(data.get(i).getSource().getLastPathSegment());
+        builder.setItems(colors, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    data.remove(i);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+        builder.show();
+        return true;
     }
 
     @Override
@@ -74,9 +101,39 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void search(FilterHolder[] query) {
-        for (FilterHolder filterItem : query) {
-            Log.i("search", filterItem.toString());
+        final HashMap<Picture, Float> results = new HashMap<>();
+        for (Picture picture : data) {
+            float score = 0;
+            for (FilterHolder filterItem : query) {
+                Log.i("search", filterItem.toString());
+                switch (filterItem.type) {
+                    case HUE:
+                        score += picture.getHueDistance((short) (filterItem.A * 360));
+                        break;
+                    case BW:
+                        break;
+                    case SIZE:
+                        break;
+                }
+            }
+            results.put(picture, score);
+            picture.setDetails(String.format(Locale.ENGLISH, "P:%.3f", score));
         }
+        Collections.sort(data, new Comparator<Picture>() {
+            @Override
+            public int compare(Picture p0, Picture p1) {
+                float s0 = results.get(p0);
+                float s1 = results.get(p1);
+                if (s0 == s1) {
+                    return 0;
+                } else if (s0 < s1) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+        });
+        adapter.notifyDataSetChanged();
     }
 
     @Override

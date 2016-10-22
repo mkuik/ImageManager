@@ -15,36 +15,6 @@
         android:visibility="gone"/>
 
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:layout_alignEnd="@+id/gridView"
-        android:layout_alignRight="@+id/gridView">
-
-        <TextView
-            android:text="/"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/debug1"
-            android:gravity="end" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/debug2"
-            android:text="0 images"
-            android:gravity="end" />
-
-        <TextView
-            android:text="ready"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/debug3"
-            android:gravity="end" />
-    </LinearLayout>
-
     <GridView
         android:id="@+id/gridView"
         android:layout_width="match_parent"

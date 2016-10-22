@@ -30,14 +30,10 @@ public class Hue extends Seekbar {
         getBar().setBackground(Bar.RAINBOW);
     }
 
-    public float getValue() {
-        return (super.getValue() - getPadding()) / (getWidth() - getPadding() * 2) * 360;
-    }
-
     @Override
     public void setValue(float value) {
         super.setValue(value);
-        getCursor().setColor(Color.HSVToColor(new float[]{(int)getValue(), 255, 255}));
+        getCursor().setColor(Color.HSVToColor(new float[]{getValue() * 360, 255, 255}));
     }
 
     @Override

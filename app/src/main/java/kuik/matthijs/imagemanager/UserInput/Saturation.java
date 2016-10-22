@@ -30,14 +30,10 @@ public class Saturation extends Seekbar {
         getBar().setBackground(Bar.BW);
     }
 
-    public float getValue() {
-        return (super.getValue() - getPadding()) / (getWidth() - getPadding() * 2) * 255;
-    }
-
     @Override
     public void setValue(float value) {
         super.setValue(value);
-        final int saturation = 255 - (int) getValue();
+        final int saturation = (int) ((1 - getValue()) * 255);
         getCursor().setColor(Color.rgb(saturation, saturation, saturation));
     }
 

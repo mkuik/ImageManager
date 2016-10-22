@@ -6,13 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".UserInput.Hue">
 
-    <view
-        android:id="@+id/hue_bar"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        class="kuik.matthijs.imagemanager.UserInput.Parts.Bar"
         android:layout_height="6dp"
         android:layout_centerInParent="true">
-    </view>
+
+        <view
+            android:id="@+id/hue_bar"
+            android:layout_width="0dp"
+            class="kuik.matthijs.imagemanager.UserInput.Parts.Bar"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
     <view
         android:layout_width="25dp"
