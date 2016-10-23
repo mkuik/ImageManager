@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,39 +19,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kuik.matthijs.imagemanager.DataTypes.Picture;
-import kuik.matthijs.imagemanager.Widget.GalleryItem;
 import kuik.matthijs.imagemanager.R;
 import kuik.matthijs.imagemanager.Widget.HueGraph;
-
-/**
- * Created by Matthijs Kuik on 9/26/2016.
- */
 
 public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
 
     private Context mContext;
     private int layoutResourceId;
-    private ArrayList<Picture> mGridData = new ArrayList<>();
 
     public GalleryGridViewAdapter(Context mContext, int layoutResourceId, ArrayList<Picture> mGridData) {
         super(mContext, layoutResourceId, mGridData);
         this.layoutResourceId = layoutResourceId;
         this.mContext = mContext;
-        this.mGridData = mGridData;
-    }
-
-    /**
-     * Updates grid data and refresh grid items.
-     * @param mGridData
-     */
-    public void setGridData(ArrayList<Picture> mGridData) {
-        this.mGridData = mGridData;
-        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View row = convertView;
         ViewHolder holder;
 
@@ -69,30 +52,33 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
             holder = (ViewHolder) row.getTag();
         }
 
-        final Picture item = mGridData.get(position);
-        List<String> pathSegments = item.getSource().getPathSegments();
-        holder.titleTextView.setText(pathSegments.get(pathSegments.size() - 1));
-        holder.details.setText(item.getDetails());
-        Picasso.with(mContext).load(item.getSource()).into(holder.imageView);
-        new SetGraphTask(holder, item).execute();
-
+        final Picture item = getItem(position);
+        if (item != null) {
+            List<String> pathSegments = item.getSource().getPathSegments();
+            holder.titleTextView.setText(pathSegments.get(pathSegments.size() - 1));
+            holder.details.setText(item.getDetails());
+            Picasso.with(mContext).load(item.getSource()).into(holder.imageView);
+            new SetGraphTask(mContext, holder, item).execute();
+        }
         return row;
     }
 
-    static class SetGraphTask extends AsyncTask<Void, Void, Void> {
+    private static class SetGraphTask extends AsyncTask<Void, Void, Void> {
 
         private ViewHolder holder;
         private Picture picture;
+        private Context context;
 
-        public SetGraphTask(ViewHolder holder, Picture picture) {
+        SetGraphTask(Context context, ViewHolder holder, Picture picture) {
             this.holder = holder;
             this.picture = picture;
+            this.context = context;
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                picture.init();
+                picture.init(context);
             } catch (IOException e) {
                 Log.d("pic init", e.toString());
             }
@@ -106,7 +92,7 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
         }
     }
 
-    static class ViewHolder {
+    private static class ViewHolder {
         TextView titleTextView;
         TextView details;
         ImageView imageView;

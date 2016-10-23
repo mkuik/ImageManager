@@ -1,10 +1,12 @@
 package kuik.matthijs.imagemanager.DataTypes;
 
+import java.io.Serializable;
+
 /**
  * Created by Matthijs on 05/10/2016.
  */
 
-public class Size {
+public class Size implements Serializable {
 
     private int width = 0;
     private int height = 0;

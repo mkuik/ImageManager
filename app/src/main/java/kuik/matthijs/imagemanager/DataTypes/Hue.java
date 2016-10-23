@@ -1,12 +1,13 @@
 package kuik.matthijs.imagemanager.DataTypes;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
  * Created by Matthijs on 06/10/2016.
  */
 
-public class Hue {
+public class Hue implements Serializable {
 
     private short hue;
     private short count;

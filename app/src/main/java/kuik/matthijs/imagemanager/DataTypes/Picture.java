@@ -12,6 +12,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,20 +21,18 @@ import java.util.List;
  * Created by Matthijs on 05/10/2016.
  */
 
-public class Picture {
+public class Picture implements Serializable {
 
-    final static int THUMBSIZE = 60;
+    private final static int THUMBSIZE = 60;
 
     private Size size;
-    private Uri source;
-    private Context context;
+    private String source;
     private List<Hue> colors = new ArrayList<>();
     private short maxCount = 0;
     private String details = "";
 
-    public Picture(Context context, Uri uri) {
-        source = uri;
-        this.context = context;
+    public Picture(Uri uri) {
+        source = uri.toString();
     }
 
     public double getHueDistance(short hue) {
@@ -62,30 +61,30 @@ public class Picture {
         return (1 - x) * 4 - 3;
     }
 
-    public Bitmap getThumbnail() throws IOException {
+    public Bitmap getThumbnail(Context context) throws IOException {
         final BitmapFactory.Options options = new BitmapFactory.Options();
 
-        InputStream inputStream = context.getContentResolver().openInputStream(source);
+        InputStream inputStream = context.getContentResolver().openInputStream(getSource());
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(inputStream, null, options);
-        inputStream.close();
+        if (inputStream != null) inputStream.close();
 
-        inputStream = context.getContentResolver().openInputStream(source);
+        inputStream = context.getContentResolver().openInputStream(getSource());
         options.inJustDecodeBounds = false;
         options.inSampleSize = calculateInSampleSize(options, THUMBSIZE, THUMBSIZE);
         final Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-        inputStream.close();
+        if (inputStream != null) inputStream.close();
 
         Log.d("Thumbnail size", "" + options.outWidth + "x" + options.outHeight);
         return bitmap;
     }
 
-    public Bitmap getBitmap() throws IOException {
+    public Bitmap getBitmap(Context context) throws IOException {
         final BitmapFactory.Options options = new BitmapFactory.Options();
-        InputStream inputStream = context.getContentResolver().openInputStream(source);
+        InputStream inputStream = context.getContentResolver().openInputStream(getSource());
         options.inJustDecodeBounds = false;
         final Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-        inputStream.close();
+        if (inputStream != null) inputStream.close();
 
         Log.d("Bitmap size", "" + options.outWidth + "x" + options.outHeight);
         return bitmap;
@@ -100,14 +99,13 @@ public class Picture {
     }
 
     public Uri getSource() {
-        return source;
+        return Uri.parse(source);
     }
 
-    public void init() throws IOException {
-        initDimensions();
+    public void init(Context context) throws IOException {
+        initDimensions(context);
         if (colors.isEmpty()) {
-            Bitmap bitmap = getThumbnail();
-            int sumScore = 0;
+            Bitmap bitmap = getThumbnail(context);
 
             final float[] hue_histogram = new float[360];
             for (int y = 0; y != bitmap.getHeight(); ++y) {
@@ -117,7 +115,6 @@ public class Picture {
                     Color.colorToHSV(pixel, hsv);
                     final float score = hsv[1] * hsv[2];
                     hue_histogram[(int) hsv[0]] += score;
-                    sumScore += score;
                 }
             }
             for (short i = 0; i != hue_histogram.length; ++i) {
@@ -131,15 +128,15 @@ public class Picture {
         }
     }
 
-    private void initDimensions() throws IOException {
-        InputStream inputStream = context.getContentResolver().openInputStream(source);
+    private void initDimensions(Context context) throws IOException {
+        InputStream inputStream = context.getContentResolver().openInputStream(getSource());
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(inputStream, null, options);
         size = new Size(options.outWidth, options.outHeight);
     }
 
-    public static int calculateInSampleSize(
+    private static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
