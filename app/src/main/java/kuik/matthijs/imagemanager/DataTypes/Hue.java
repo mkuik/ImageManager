@@ -10,9 +10,9 @@ import java.util.Comparator;
 public class Hue implements Serializable {
 
     private short hue;
-    private short count;
+    private float count;
 
-    public Hue(short hue, short count) {
+    public Hue(short hue, float count) {
         this.count = count;
         this.hue = hue;
     }
@@ -21,7 +21,7 @@ public class Hue implements Serializable {
         return hue;
     }
 
-    public short getCount() {
+    public float getCount() {
         return count;
     }
 

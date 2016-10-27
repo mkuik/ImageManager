@@ -2,12 +2,12 @@ package kuik.matthijs.imagemanager.Activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -19,72 +19,29 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.GridView;
+import android.widget.ProgressBar;
 
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Locale;
 
-import kuik.matthijs.imagemanager.Adapter.GalleryGridViewAdapter;
 import kuik.matthijs.imagemanager.DataTypes.FilterHolder;
 import kuik.matthijs.imagemanager.DataTypes.Picture;
+import kuik.matthijs.imagemanager.Fragment.GalleryActivityFragment;
 import kuik.matthijs.imagemanager.R;
-import kuik.matthijs.imagemanager.UserInput.Parts.ValueContainer;
 import kuik.matthijs.imagemanager.Widget.SearchDialog;
 
-public class GalleryActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener {
+public class GalleryActivity extends AppCompatActivity {
 
     public static final int IMAGE_FROM_STORAGE = 400;
-    private GalleryGridViewAdapter adapter;
-    private ArrayList<Picture> data = new ArrayList<>();
-    private GridView galleryGrid;
     final String FILENAME = "gallery.db";
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d("Gallery", "onDestroy");
-        // TODO Save data in internal memory using serialisation
-
-        try {
-            save();
-        } catch (IOException e) {
-            Log.d("Gallery", e.toString());
-        }
-    }
-
-    private void save() throws IOException {
-        FileOutputStream fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-        ObjectOutputStream out = new ObjectOutputStream(fos);
-        out.writeObject(data);
-        out.close();
-        fos.close();
-
-        Log.d("Gallery", "save " + data.size() + " pictures");
-    }
-
-    private void load() throws IOException, ClassNotFoundException {
-        FileInputStream fis = openFileInput(FILENAME);
-        ObjectInputStream in = new ObjectInputStream(fis);
-        data = (ArrayList<Picture>) in.readObject();
-        in.close();
-        fis.close();
-
-        Log.d("Gallery", "load " + data.size() + " pictures");
-        for (Picture picture : data) {
-            Log.d("Gallery", "load " + picture.toString());
-        }
-    }
+    GalleryActivityFragment gallery = null;
+    ProgressBar progressBar = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,38 +50,27 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         setContentView(R.layout.activity_gallery);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        galleryGrid = (GridView) findViewById(R.id.gridView);
-        galleryGrid.setOnItemLongClickListener(this);
-
-        try {
-            load();
-        } catch (IOException | ClassNotFoundException e) {
-            Log.d("Gallery", e.toString());
-        }
-
-        adapter = new GalleryGridViewAdapter(this, R.layout.gallery_item, data);
-        galleryGrid.setAdapter(adapter);
-    }
-
-    @Override
-    public boolean onItemLongClick(final AdapterView<?> adapterView, View view, final int i, long l) {
-        final Picture picture = adapter.getItem(i);
-
-        CharSequence colors[] = new CharSequence[] {"Remove"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(picture.getSource().getLastPathSegment());
-        builder.setItems(colors, new DialogInterface.OnClickListener() {
+        gallery = (GalleryActivityFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        new AsyncTask<Void, Void, ArrayList<Picture>>() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    adapter.remove(picture);
-                    adapter.notifyDataSetChanged();
+            protected ArrayList<Picture> doInBackground(Void... voids) {
+                ArrayList<Picture> images = null;
+                try {
+                    images = load();
+                } catch (IOException | ClassNotFoundException e) {
+                    Log.e("LOAD", e.toString());
                 }
+                return images;
             }
-        });
-        builder.show();
-        return true;
+
+            @Override
+            protected void onPostExecute(ArrayList<Picture> pictures) {
+                super.onPostExecute(pictures);
+                gallery.setImages(pictures);
+            }
+        };
+
     }
 
     @Override
@@ -132,6 +78,193 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_gallery, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.menu_action_search:
+                showSearchDialog();
+                return true;
+            case R.id.menu_action_add:
+                getImageFromGallery();
+                return true;
+            case R.id.menu_action_scan:
+                scanForImages();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case IMAGE_FROM_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getImageFromGallery();
+                }
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == IMAGE_FROM_STORAGE && null != data && gallery != null) {
+                gallery.addImage(new Picture(data.getData(), getID(data.getData())));
+                if (gallery != null) try {
+                    save(gallery.getImages());
+                } catch (IOException e) {
+                    Log.e("save", e.toString());
+                }
+            }
+        }
+    }
+
+    private int getID(Uri uri) {
+        // which image properties are we querying
+        String[] projection = new String[] {
+                MediaStore.Images.Media._ID,
+        };
+
+        // Make the query.
+        final Cursor cur = getContentResolver().query(uri,
+                projection, // Which columns to return
+                null,       // Which rows to return (all rows)
+                null,       // Selection arguments (none)
+                null        // Ordering
+        );
+
+        int id = -1;
+        if (cur != null && cur.moveToFirst()) {
+            int idColum = cur.getColumnIndex(
+                    MediaStore.Images.Media._ID);
+            id = cur.getInt(idColum);
+        }
+        return id;
+    }
+
+    private void scanForImages() {
+        // which image properties are we querying
+        final String[] projection = new String[] {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                MediaStore.Images.Media.DATE_TAKEN,
+                MediaStore.Images.Media.DATA
+        };
+
+        // content:// style URI for the "primary" external storage volume
+        Uri images = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        // Make the query.
+        final Cursor cur = getContentResolver().query(images,
+                projection, // Which columns to return
+                null,       // Which rows to return (all rows)
+                null,       // Selection arguments (none)
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME        // Ordering
+        );
+
+        Log.i("ListingImages"," query count=" + cur.getCount());
+
+        new AsyncTask<Void, Picture, Void>() {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                progressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if (cur.moveToFirst()) {
+                    String bucket;
+                    String date;
+                    String path;
+                    int id;
+                    Uri uri;
+                    int bucketColumn = cur.getColumnIndex(
+                            MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+                    int dateColumn = cur.getColumnIndex(
+                            MediaStore.Images.Media.DATE_TAKEN);
+                    int pathColumn = cur.getColumnIndex(
+                            MediaStore.Images.Media.DATA);
+                    int idColum = cur.getColumnIndex(
+                            MediaStore.Images.Media._ID);
+
+                    do {
+                        // Get the field values
+                        bucket = cur.getString(bucketColumn);
+                        date = cur.getString(dateColumn);
+                        path = cur.getString(pathColumn);
+                        uri = Uri.fromFile(new File(path));
+                        id = cur.getInt(idColum);
+
+                        // Do something with the values.
+                        Log.i("ListingImages", " bucket=" + bucket
+                                + " date_taken=" + date + " uri=" + uri);
+                        Picture picture = new Picture(uri, id);
+                        if (!gallery.hasImage(picture)) {
+                            picture.setDetails(bucket);
+                            try {
+                                picture.init(GalleryActivity.this);
+                                publishProgress(picture);
+                            } catch (IOException | NullPointerException e) {
+                                Log.e("init", e.toString());
+                            }
+                        }
+                    } while (cur.moveToNext() && !isCancelled());
+                    cur.close();
+                    if (gallery != null) {
+                        try {
+                            save(gallery.getImages());
+                        } catch (IOException e) {
+                            Log.e("save", e.toString());
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void onProgressUpdate(Picture... values) {
+                super.onProgressUpdate(values);
+                if (gallery != null) {
+                    gallery.addImage(values[0]);
+                } else {
+                    cancel(true);
+                }
+            }
+        }.execute();
+
+    }
+
+    private void save(ArrayList<Picture> data) throws IOException {
+        FileOutputStream fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
+        ObjectOutputStream out = new ObjectOutputStream(fos);
+        out.writeObject(data);
+        out.close();
+        fos.close();
+        Log.d("Gallery", "save " + gallery.getImages().size() + " pictures");
+    }
+
+    private ArrayList<Picture> load() throws IOException, ClassNotFoundException {
+        FileInputStream fis = openFileInput(FILENAME);
+        ObjectInputStream in = new ObjectInputStream(fis);
+        ArrayList<Picture> data = (ArrayList<Picture>) in.readObject();
+        in.close();
+        fis.close();
+        Log.d("Gallery", "load " + data.size() + " pictures");
+        return data;
     }
 
     public void showSearchDialog() {
@@ -155,82 +288,12 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
     }
 
     private void search(FilterHolder[] query) {
-        final HashMap<Picture, Float> results = new HashMap<>();
-        for (Picture picture : data) {
-            float score = 0;
-            for (FilterHolder filterItem : query) {
-                Log.i("search", filterItem.toString());
-                switch (filterItem.type) {
-                    case HUE:
-                        score += picture.getHueDistance((short) (filterItem.A * 360));
-                        break;
-                    case BW:
-                        break;
-                    case SIZE:
-                        break;
-                }
-            }
-            results.put(picture, score);
-            picture.setDetails(String.format(Locale.ENGLISH, "P:%.3f", score));
-        }
-        Collections.sort(data, new Comparator<Picture>() {
-            @Override
-            public int compare(Picture p0, Picture p1) {
-                float s0 = results.get(p0);
-                float s1 = results.get(p1);
-                if (s0 == s1) {
-                    return 0;
-                } else if (s0 < s1) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-        });
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.menu_action_search:
-                showSearchDialog();
-                return true;
-            case R.id.menu_action_add:
-                getImageFromGallery();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    public void addImage(final Uri uri) {
-        final Picture picture = new Picture(uri);
-        data.add(picture);
-        adapter.notifyDataSetChanged();
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case IMAGE_FROM_STORAGE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getImageFromGallery();
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == IMAGE_FROM_STORAGE && null != data) {
-                addImage(data.getData());
+        if (gallery != null) {
+            gallery.search(query);
+            try {
+                save(gallery.getImages());
+            } catch (IOException e) {
+                Log.e("save", e.toString());
             }
         }
     }

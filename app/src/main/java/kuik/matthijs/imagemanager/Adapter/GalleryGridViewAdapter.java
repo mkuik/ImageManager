@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import kuik.matthijs.imagemanager.DataTypes.Picture;
 import kuik.matthijs.imagemanager.R;
@@ -31,6 +32,15 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
         super(mContext, layoutResourceId, mGridData);
         this.layoutResourceId = layoutResourceId;
         this.mContext = mContext;
+    }
+
+    public boolean hasPicture(Picture picture) {
+        for (int i = 0; i != getCount(); ++i) {
+            if (getItem(i).getId() == picture.getId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NonNull
@@ -54,11 +64,9 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
 
         final Picture item = getItem(position);
         if (item != null) {
-            List<String> pathSegments = item.getSource().getPathSegments();
-            holder.titleTextView.setText(pathSegments.get(pathSegments.size() - 1));
-            holder.details.setText(item.getDetails());
-            Picasso.with(mContext).load(item.getSource()).into(holder.imageView);
-            new SetGraphTask(mContext, holder, item).execute();
+            holder.titleTextView.setText(String.format(Locale.ENGLISH, "%s", item.getDetails()));
+            Picasso.with(mContext).load(item.getSource()).fit().centerCrop().into(holder.imageView);
+            holder.graph.setData(item.getColors());
         }
         return row;
     }
@@ -76,12 +84,20 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            holder.graph.setData(null);
+            holder.titleTextView.setText(String.format(Locale.ENGLISH, "%s",
+                    picture.getSource().getLastPathSegment()));
+        }
+
+        @Override
         protected Void doInBackground(Void... voids) {
-            try {
-                picture.init(context);
-            } catch (IOException e) {
-                Log.d("pic init", e.toString());
-            }
+//            try {
+//                picture.init(context);
+//            } catch (IOException e) {
+//                Log.d("pic init", e.toString());
+//            }
             return null;
         }
 
@@ -89,6 +105,9 @@ public class GalleryGridViewAdapter  extends ArrayAdapter<Picture> {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             holder.graph.setData(picture.getColors());
+            holder.titleTextView.setText(String.format(Locale.ENGLISH, "%s %dx%d",
+                    picture.getSource().getLastPathSegment(),
+                    picture.getWidth(), picture.getHeight()));
         }
     }
 

@@ -16,12 +16,23 @@ public class Size implements Serializable {
         this.width = width;
     }
 
+    public Size() {
+    }
+
     public int getHeight() {
         return height;
     }
 
     public int getWidth() {
         return width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
     }
 
     public Size fitInside(int value) {

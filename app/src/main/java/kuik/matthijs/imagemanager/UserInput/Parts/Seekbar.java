@@ -84,7 +84,7 @@ public class Seekbar extends ValueContainer implements View.OnTouchListener, Vie
     }
 
     public void setValue(float value) {
-        Log.d("Seekbar", "v:"+value);
+//        Log.d("Seekbar", "v:"+value);
         if (value >= 0 && value <= 1) {
             this.value = value;
         } else if (value < 0) {

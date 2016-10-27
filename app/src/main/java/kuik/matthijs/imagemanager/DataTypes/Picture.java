@@ -16,49 +16,59 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Matthijs on 05/10/2016.
  */
 
-public class Picture implements Serializable {
+public class Picture extends Size implements Serializable {
 
-    private final static int THUMBSIZE = 60;
-
-    private Size size;
+    private final static int THUMBSIZE = 100;
     private String source;
-    private List<Hue> colors = new ArrayList<>();
-    private short maxCount = 0;
+    private List<Hue> colors = null;
+    private float maxCount = 0;
     private String details = "";
+    private int id = -1;
 
-    public Picture(Uri uri) {
+    public Picture(Uri uri, int id) {
         source = uri.toString();
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public double getHueDistance(short hue) {
-//        Log.i("Picture", "getHueDistance( " + hue + ")");
+//        Log.i("Picture", "getHueDistance( " + hue + " )");
         double maxScore = 0;
         for (int i = 0; i != getColors().size(); ++i) {
             Hue item = getColors().get(i);
-            double distance;
-            if (item.getHue() == hue) {
-                distance = 0;
-            } else if (item.getHue() < hue) {
-                distance = Math.min(hue - item.getHue(), 360 + item.getHue() - hue) / 360D;
-            } else {
-                distance = Math.min(item.getHue() - hue, 360 + hue - item.getHue()) / 360D;
-            }
-            double significance = item.getCount() / (double)maxCount;
+            double distance = getHueDelta(item.getHue(), hue);
+            double significance = item.getCount() / maxCount;
             double score = colorDeltaFormula(distance) * significance;
-//            Log.i("Picture", item.toString() + " distance:" + distance + " significance:" + significance + " score:" + score);
-            if (score > maxScore) maxScore = score;
+            //if (score > maxScore) maxScore = score;
+            maxScore += score;
+//            Log.i("Picture", String.format(Locale.ENGLISH, "%3d  %.3f x %.3f = %.3f",
+//                    item.getHue(), colorDeltaFormula(distance), significance, score));
         }
-        Log.i("Picture", toString() + " score:" + maxScore);
+//        Log.i("Picture", toString() + " score:" + maxScore);
         return maxScore;
     }
 
-    private double colorDeltaFormula(double x) {
-        return (1 - x) * 4 - 3;
+    private static double colorDeltaFormula(double x) {
+        return Math.pow(1 - x, 10);
+    }
+
+    private static double getHueDelta(short A, short B) {
+        if (A == B) {
+            return 0;
+        } else if (A < B) {
+            return Math.min(B - A, 360 + A - B) / 360D;
+        } else {
+            return Math.min(A - B, 360 + B - A) / 360D;
+        }
     }
 
     public Bitmap getThumbnail(Context context) throws IOException {
@@ -75,7 +85,6 @@ public class Picture implements Serializable {
         final Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
         if (inputStream != null) inputStream.close();
 
-        Log.d("Thumbnail size", "" + options.outWidth + "x" + options.outHeight);
         return bitmap;
     }
 
@@ -90,10 +99,6 @@ public class Picture implements Serializable {
         return bitmap;
     }
 
-    public Size getSize() {
-        return size;
-    }
-
     public List<Hue> getColors() {
         return colors;
     }
@@ -102,30 +107,83 @@ public class Picture implements Serializable {
         return Uri.parse(source);
     }
 
-    public void init(Context context) throws IOException {
-        initDimensions(context);
-        if (colors.isEmpty()) {
-            Bitmap bitmap = getThumbnail(context);
+    public void init(Context context) throws IOException, NullPointerException {
+        Log.d("init", source);
+        colors = new ArrayList<>();
+        maxCount = 0;
 
-            final float[] hue_histogram = new float[360];
-            for (int y = 0; y != bitmap.getHeight(); ++y) {
-                for (int x = 0; x != bitmap.getWidth(); ++x) {
-                    final int pixel = bitmap.getPixel(x, y);
-                    final float[] hsv = new float[3];
-                    Color.colorToHSV(pixel, hsv);
-                    final float score = hsv[1] * hsv[2];
-                    hue_histogram[(int) hsv[0]] += score;
-                }
+        initDimensions(context);
+        Bitmap bitmap = getThumbnail(context);
+
+        float[] hue_histogram = new float[360];
+        for (int y = 0; y != bitmap.getHeight(); ++y) {
+            for (int x = 0; x != bitmap.getWidth(); ++x) {
+                final int pixel = bitmap.getPixel(x, y);
+                final float[] hsv = new float[3];
+                Color.colorToHSV(pixel, hsv);
+                final float score = hsv[1] * hsv[2];
+                hue_histogram[(int) hsv[0]] += score;
             }
-            for (short i = 0; i != hue_histogram.length; ++i) {
-                short count = (short)hue_histogram[i];
-                if (count > 0) {
-                    colors.add(new Hue(i, count));
-                }
-                if (count > maxCount) maxCount = count;
-            }
-            Collections.sort(colors, new Hue.SortByCount());
         }
+        //hue_histogram = groupHistogramPeaks(hue_histogram);
+        for (short hue = 0; hue != hue_histogram.length; ++hue) {
+            float count = (float) Math.log(hue_histogram[hue]);
+            if (count > 0) {
+                colors.add(new Hue(hue, count));
+            }
+            if (count > maxCount) maxCount = count;
+        }
+        Collections.sort(colors, new Hue.SortByCount());
+    }
+
+    private static float[] groupHistogramPeaks(float[] histogram) {
+        final float[] groupedHistogram = new float[histogram.length];
+        int xGroupStart = 0;
+        int sumGroupCount = (int) histogram[0];
+        boolean peakLocated = false;
+        for (short x = 1; x != histogram.length; ++x) {
+            final int y0 = (int)histogram[x-1];
+            final int y1 = (int)histogram[x];
+
+            Log.i("grouping", String.format(Locale.ENGLISH, "x:%d y:(%d -> %d) peak:%b", x, y0, y1, peakLocated));
+            if (y0 > y1) {
+                // decrease
+                peakLocated = true;
+                sumGroupCount += y1;
+            } else if (peakLocated) {
+                // equal or increase after group peak
+
+                // analyse
+                final int[] group = new int[sumGroupCount];
+                for (int groupI = 0, groupX = xGroupStart; groupX != x; ++groupX) {
+                    final int xRepeatCount = (int) histogram[groupX];
+                    for (int groupXI = 0; groupXI != xRepeatCount; ++groupXI) {
+                        Log.i("grouping", String.format(Locale.ENGLISH, "I:%d X:%d XI:%d", groupI, groupX, groupXI));
+                        group[groupI] = groupX;
+                        ++groupI;
+                    }
+                }
+                final int groupX = getMedian(group);
+                groupedHistogram[groupX] = sumGroupCount;
+
+                xGroupStart = x;
+                sumGroupCount = y1;
+                peakLocated = false;
+            } else {
+                // equal or increase to group peak
+                sumGroupCount += y1;
+            }
+        }
+        return groupedHistogram;
+    }
+
+    private static int getMedian(int[] values) {
+        int median;
+        if (values.length % 2 == 0)
+            median = (values[values.length/2] + values[values.length/2 - 1])/2;
+        else
+            median = values[values.length/2];
+        return median;
     }
 
     private void initDimensions(Context context) throws IOException {
@@ -133,7 +191,8 @@ public class Picture implements Serializable {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(inputStream, null, options);
-        size = new Size(options.outWidth, options.outHeight);
+        setWidth(options.outWidth);
+        setHeight(options.outHeight);
     }
 
     private static int calculateInSampleSize(
@@ -169,8 +228,7 @@ public class Picture implements Serializable {
 
     @Override
     public String toString() {
-        return "Picture{" +
-                "size=" + size +
+        return "Picture{" + super.toString() +
                 ", source=" + source +
                 '}';
     }
