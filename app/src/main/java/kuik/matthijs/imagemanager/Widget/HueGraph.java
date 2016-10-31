@@ -13,6 +13,7 @@ import android.view.View;
 import java.util.List;
 
 import kuik.matthijs.imagemanager.DataTypes.Hue;
+import kuik.matthijs.imagemanager.DataTypes.HueHistogramData;
 
 /**
  * Created by Matthijs on 15/10/2016.
@@ -20,8 +21,7 @@ import kuik.matthijs.imagemanager.DataTypes.Hue;
 
 public class HueGraph extends View {
 
-    private List<Hue> data;
-    private float max;
+    private HueHistogramData data;
     private Paint paint = new Paint();
     private float[] hsv = {0, 120, 120};
 
@@ -44,27 +44,19 @@ public class HueGraph extends View {
         paint.setStyle(Paint.Style.FILL);
     }
 
-    public void setData(List<Hue> data) {
+    public void setData(HueHistogramData data) {
         this.data = data;
-        max = 0;
-        if (data != null) {
-            for (Hue hue : data) {
-                if (hue.getCount() > max) {
-                    max = hue.getCount();
-                }
-            }
-        }
         invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (data != null) {
+        if (data != null && !data.isEmpty()) {
             final int width = getWidth();
             final int height = getHeight();
             final float xRatio = width / 360F;
-            final float yRatio = height / (float)max;
+            final float yRatio = height / data.getMax().getCount();
             for (Hue hue : data) {
                 final float x = hue.getHue() * xRatio;
                 final float y = hue.getCount() * yRatio;

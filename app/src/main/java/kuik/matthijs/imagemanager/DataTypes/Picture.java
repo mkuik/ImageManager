@@ -10,8 +10,13 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,20 +29,72 @@ import java.util.Locale;
 
 public class Picture extends Size implements Serializable {
 
-    private final static int THUMBSIZE = 100;
+    private transient final static int THUMBSIZE = 100;
     private String source;
-    private List<Hue> colors = null;
-    private float maxCount = 0;
     private String details = "";
     private int id = -1;
+    private HueHistogramData colors = null;
 
-    public Picture(Uri uri, int id) {
+    public Picture(Uri uri, int id, int width, int height) {
+        super(width, height);
         source = uri.toString();
         this.id = id;
     }
 
+    private String getMetaFilename() {
+        return id + ".meta";
+    }
+
+    public String getFilename() {
+        return getSource().getLastPathSegment();
+    }
+
+    private void loadColorsFromMemory(Context context) throws IOException, ClassNotFoundException {
+        FileInputStream fis = context.openFileInput(getMetaFilename());
+        ObjectInputStream in = new ObjectInputStream(fis);
+        colors = (HueHistogramData) in.readObject();
+        in.close();
+        fis.close();
+    }
+
+    private void loadColorsFromBitmap(Bitmap bitmap) {
+        if (bitmap != null) {
+            colors = new HueHistogramData();
+            float[] hue_histogram = new float[360];
+            for (int y = 0; y != bitmap.getHeight(); ++y) {
+                for (int x = 0; x != bitmap.getWidth(); ++x) {
+                    final int pixel = bitmap.getPixel(x, y);
+                    final float[] hsv = new float[3];
+                    Color.colorToHSV(pixel, hsv);
+                    final float score = hsv[1] * hsv[2];
+                    hue_histogram[(int) hsv[0]] += score;
+                }
+            }
+            //hue_histogram = groupHistogramPeaks(hue_histogram);
+            for (short hue = 0; hue != hue_histogram.length; ++hue) {
+                float count = (float) Math.log(hue_histogram[hue]);
+                if (count > 0) {
+                    colors.add(new Hue(hue, count));
+                }
+            }
+            Collections.sort(colors, new Hue.SortByCount());
+        }
+    }
+
+    private void saveColorsToMemory(Context context) throws IOException {
+        FileOutputStream fos = context.openFileOutput(getMetaFilename(), Context.MODE_PRIVATE);
+        ObjectOutputStream out = new ObjectOutputStream(fos);
+        out.writeObject(colors);
+        out.close();
+        fos.close();
+    }
+
     public int getId() {
         return id;
+    }
+
+    public float getMaxCount() {
+        return colors.getMax().getCount();
     }
 
     public double getHueDistance(short hue) {
@@ -46,7 +103,7 @@ public class Picture extends Size implements Serializable {
         for (int i = 0; i != getColors().size(); ++i) {
             Hue item = getColors().get(i);
             double distance = getHueDelta(item.getHue(), hue);
-            double significance = item.getCount() / maxCount;
+            double significance = item.getCount() / getMaxCount();
             double score = colorDeltaFormula(distance) * significance;
             //if (score > maxScore) maxScore = score;
             maxScore += score;
@@ -99,7 +156,7 @@ public class Picture extends Size implements Serializable {
         return bitmap;
     }
 
-    public List<Hue> getColors() {
+    public HueHistogramData getColors() {
         return colors;
     }
 
@@ -107,33 +164,25 @@ public class Picture extends Size implements Serializable {
         return Uri.parse(source);
     }
 
-    public void init(Context context) throws IOException, NullPointerException {
+    public void init(final Context context) throws IOException, NullPointerException {
         Log.d("init", source);
-        colors = new ArrayList<>();
-        maxCount = 0;
+        try {
+            loadColorsFromMemory(context);
+        } catch (IOException | ClassNotFoundException e){
+            initDimensions(context);
+            loadColorsFromBitmap(getThumbnail(context));
 
-        initDimensions(context);
-        Bitmap bitmap = getThumbnail(context);
-
-        float[] hue_histogram = new float[360];
-        for (int y = 0; y != bitmap.getHeight(); ++y) {
-            for (int x = 0; x != bitmap.getWidth(); ++x) {
-                final int pixel = bitmap.getPixel(x, y);
-                final float[] hsv = new float[3];
-                Color.colorToHSV(pixel, hsv);
-                final float score = hsv[1] * hsv[2];
-                hue_histogram[(int) hsv[0]] += score;
-            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        saveColorsToMemory(context);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }).start();
         }
-        //hue_histogram = groupHistogramPeaks(hue_histogram);
-        for (short hue = 0; hue != hue_histogram.length; ++hue) {
-            float count = (float) Math.log(hue_histogram[hue]);
-            if (count > 0) {
-                colors.add(new Hue(hue, count));
-            }
-            if (count > maxCount) maxCount = count;
-        }
-        Collections.sort(colors, new Hue.SortByCount());
     }
 
     private static float[] groupHistogramPeaks(float[] histogram) {
@@ -228,8 +277,6 @@ public class Picture extends Size implements Serializable {
 
     @Override
     public String toString() {
-        return "Picture{" + super.toString() +
-                ", source=" + source +
-                '}';
+        return String.format(Locale.ENGLISH, "Picture{%d, %s, '%s', %s}", id, source, details, colors);
     }
 }

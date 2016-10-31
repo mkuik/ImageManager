@@ -39,6 +39,7 @@ import kuik.matthijs.imagemanager.Widget.SearchDialog;
 public class GalleryActivity extends AppCompatActivity {
 
     public static final int IMAGE_FROM_STORAGE = 400;
+    public static final int ALL_IMAGES = 401;
     final String FILENAME = "gallery.db";
     GalleryActivityFragment gallery = null;
     ProgressBar progressBar = null;
@@ -108,6 +109,12 @@ public class GalleryActivity extends AppCompatActivity {
                 }
                 break;
             }
+            case ALL_IMAGES: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    scanForImages();
+                }
+                break;
+            }
         }
     }
 
@@ -116,7 +123,7 @@ public class GalleryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGE_FROM_STORAGE && null != data && gallery != null) {
-                gallery.addImage(new Picture(data.getData(), getID(data.getData())));
+                gallery.addImage(new Picture(data.getData(), getID(data.getData()), 0, 0));
                 if (gallery != null) try {
                     save(gallery.getImages());
                 } catch (IOException e) {
@@ -150,6 +157,12 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void scanForImages() {
+        if (!hasStoragePermissions() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    ALL_IMAGES);
+            return;
+        }
+
         // which image properties are we querying
         final String[] projection = new String[] {
                 MediaStore.Images.Media._ID,
@@ -212,7 +225,7 @@ public class GalleryActivity extends AppCompatActivity {
                         // Do something with the values.
                         Log.i("ListingImages", " bucket=" + bucket
                                 + " date_taken=" + date + " uri=" + uri);
-                        Picture picture = new Picture(uri, id);
+                        Picture picture = new Picture(uri, id, 0, 0);
                         if (!gallery.hasImage(picture)) {
                             picture.setDetails(bucket);
                             try {
@@ -306,6 +319,10 @@ public class GalleryActivity extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     IMAGE_FROM_STORAGE);
         }
+    }
+
+    protected void getAllImages() {
+
     }
 
     protected boolean hasStoragePermissions() {

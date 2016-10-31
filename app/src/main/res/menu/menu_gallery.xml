@@ -2,10 +2,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="kuik.matthijs.imagemanager.Activity.GalleryActivity">
+
     <item android:title="Scan"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:id="@+id/menu_action_scan"
         android:icon="@drawable/ic_cached_white_24dp" />
+
     <item
         android:actionViewClass="android.support.v7.widget.SearchView"
         android:icon="@drawable/ic_search"
@@ -18,10 +20,12 @@
         android:id="@+id/menu_action_add"
         android:icon="@drawable/ic_add"
         app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/menu_action_settings"
         android:title="@string/action_settings"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_settings"
         android:visible="false" />
+    
 </menu>

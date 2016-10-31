@@ -43,9 +43,6 @@ public class Size implements Serializable {
 
     @Override
     public String toString() {
-        return "Size{" +
-                "height=" + height +
-                ", width=" + width +
-                '}';
+        return width + "x" + height;
     }
 }

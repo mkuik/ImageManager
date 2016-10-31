@@ -2,6 +2,7 @@ package kuik.matthijs.imagemanager.DataTypes;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * Created by Matthijs on 06/10/2016.
@@ -41,9 +42,6 @@ public class Hue implements Serializable {
 
     @Override
     public String toString() {
-        return "Hue{" +
-                "count=" + count +
-                ", hue=" + hue +
-                '}';
+        return String.format(Locale.ENGLISH, "Hue{%d, %.1f}", hue, count);
     }
 }
