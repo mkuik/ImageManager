@@ -20,6 +20,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bartoszlipinski.recyclerviewheader2.RecyclerViewHeader;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -87,9 +89,9 @@ public class BucketFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
 
         // Set the adapter
-        if (view instanceof RecyclerView) {
+        if (view != null) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.list);
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
@@ -98,6 +100,9 @@ public class BucketFragment extends Fragment {
             adapter = new BucketAdapter(getActivity(), new ArrayList<Picture>(), mListener);
             recyclerView.setAdapter(adapter);
             recyclerView.addItemDecoration(new GridSpacingItemDecoration(mColumnCount, 2, false));
+
+            RecyclerViewHeader header = (RecyclerViewHeader) view.findViewById(R.id.header);
+            header.attachTo(recyclerView);
         }
 
         return view;

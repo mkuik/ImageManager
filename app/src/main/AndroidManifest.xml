@@ -28,7 +28,7 @@
         <activity
             android:name=".Activity.GalleryActivity"
             android:label="@string/title_activity_gallery"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme" >
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

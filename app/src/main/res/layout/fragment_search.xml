@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="kuik.matthijs.imagemanager.Bucket.SearchFragment">
+    android:fitsSystemWindows="true"
+    tools:context="kuik.matthijs.imagemanager.Search.SearchFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -11,14 +12,16 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="16dp"
         android:gravity="bottom">
 
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:visibility="visible" />
+            android:id="@+id/search_param_list"
+            app:layoutManager="LinearLayoutManager"
+            app:spanCount="1"
+            android:visibility="gone"/>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -26,14 +29,69 @@
             android:layout_weight="0"
             android:layout_height="wrap_content"
             android:id="@+id/button_layout"
-            android:layoutDirection="rtl">
+            android:gravity="end">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:id="@+id/button_container"
+                android:visibility="gone">
+
+
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    app:srcCompat="@drawable/ic_color"
+                    android:id="@+id/color_button"
+                    android:layout_weight="0"
+                    android:layout_margin="16dp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    app:srcCompat="@drawable/ic_tonality"
+                    android:id="@+id/saturation_button"
+                    android:layout_weight="0"
+                    android:layout_margin="16dp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    app:srcCompat="@drawable/ic_photo_size"
+                    android:id="@+id/size_button"
+                    android:layout_weight="0"
+                    android:layout_margin="16dp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
 
             <android.support.design.widget.FloatingActionButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 app:srcCompat="@drawable/ic_search"
-                android:id="@+id/search_button" />
+                android:id="@+id/search_button"
+                android:layout_weight="0"
+                android:layout_margin="16dp" />
 
         </LinearLayout>
 

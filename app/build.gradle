@@ -29,5 +29,6 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.6.0-SNAPSHOT'
     compile 'com.android.support:support-v4:24.2.1'
     compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.bartoszlipinski:recyclerviewheader2:2.0.1'
     testCompile 'junit:junit:4.12'
 }

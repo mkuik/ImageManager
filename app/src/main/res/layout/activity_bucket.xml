@@ -18,7 +18,7 @@
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="kuik.matthijs.imagemanager.Bucket.SearchFragment"
+        android:name="kuik.matthijs.imagemanager.Search.SearchFragment"
         android:id="@+id/fragment2"
         tools:layout="@layout/fragment_search" />
 

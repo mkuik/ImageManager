@@ -4,9 +4,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import kuik.matthijs.imagemanager.BucketOverview.BucketItem;
 import kuik.matthijs.imagemanager.DataTypes.Picture;
 import kuik.matthijs.imagemanager.R;
+import kuik.matthijs.imagemanager.Search.SearchFragment;
 
 public class BucketActivity extends AppCompatActivity implements BucketFragment.OnImageInteractionListener, SearchFragment.OnSearchInteractionListener {
 
