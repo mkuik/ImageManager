@@ -12,16 +12,23 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="bottom">
+        android:gravity="bottom|right">
 
-        <android.support.v7.widget.RecyclerView
+        <ListView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:id="@+id/search_param_list"
-            app:layoutManager="LinearLayoutManager"
-            app:spanCount="1"
-            android:visibility="gone"/>
+            android:animateLayoutChanges="false"
+            tools:listitem="@layout/search_param_hue"
+            android:divider="@android:color/transparent"
+            android:headerDividersEnabled="false"
+            android:footerDividersEnabled="false"
+            android:background="#0000"
+            android:stackFromBottom="true"
+            android:dividerHeight="@dimen/search_param_margin"
+            android:layout_marginLeft="@dimen/search_param_margin"
+            android:layout_marginRight="@dimen/search_param_margin" />
 
         <LinearLayout
             android:orientation="horizontal"

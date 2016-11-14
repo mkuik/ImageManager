@@ -100,9 +100,6 @@ public class BucketFragment extends Fragment {
             adapter = new BucketAdapter(getActivity(), new ArrayList<Picture>(), mListener);
             recyclerView.setAdapter(adapter);
             recyclerView.addItemDecoration(new GridSpacingItemDecoration(mColumnCount, 2, false));
-
-            RecyclerViewHeader header = (RecyclerViewHeader) view.findViewById(R.id.header);
-            header.attachTo(recyclerView);
         }
 
         return view;

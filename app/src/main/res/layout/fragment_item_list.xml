@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-    <android.support.v7.widget.RecyclerView
+<android.support.v7.widget.RecyclerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/list"
         android:name="kuik.matthijs.imagemanager.Bucket.ItemFragment"
         android:layout_width="match_parent"
@@ -14,20 +11,3 @@
         app:spanCount="2"
         tools:context="kuik.matthijs.imagemanager.BucketOverview.BucketOverviewFragment"
         tools:listitem="@layout/fragment_item" />
-
-    <com.bartoszlipinski.recyclerviewheader2.RecyclerViewHeader
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_gravity="center_horizontal|top"
-        android:gravity="center_horizontal|bottom">
-
-        <TextView
-            android:layout_margin="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="header"/>
-
-    </com.bartoszlipinski.recyclerviewheader2.RecyclerViewHeader>
-
-</FrameLayout>

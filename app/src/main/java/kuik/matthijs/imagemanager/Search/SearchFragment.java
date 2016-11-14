@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import kuik.matthijs.imagemanager.Adapter.FilterAdapter;
 import kuik.matthijs.imagemanager.DataTypes.FilterHolder;
@@ -38,9 +40,9 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
     private FloatingActionButton saturationButton;
     private FloatingActionButton sizeButton;
     private LinearLayout buttonLayout;
-    private SearchAdapter adapter;
+    private SearchBaseAdapter adapter;
     private OnSearchInteractionListener mListener;
-    private RecyclerView recyclerView;
+    private ListView recyclerView;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -78,8 +80,8 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
             saturationButton.setOnClickListener(this);
             sizeButton.setOnClickListener(this);
 
-            recyclerView = (RecyclerView) view.findViewById(R.id.search_param_list);
-            adapter = new SearchAdapter(getContext(), new ArrayList<FilterHolder>());
+            recyclerView = (ListView) view.findViewById(R.id.search_param_list);
+            adapter = new SearchBaseAdapter(getContext());
             recyclerView.setAdapter(adapter);
         }
         return view;
@@ -115,12 +117,16 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
 
     private void expand() {
         buttonLayout.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.VISIBLE);
 
         final int resource = R.anim.zoom_in;
         animate(colorButton, 100, null, resource);
         animate(saturationButton, 50, null, resource);
         animate(sizeButton, 0, null, resource);
+
+        ViewGroup.LayoutParams lp = recyclerView.getLayoutParams();
+        lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        recyclerView.setLayoutParams(lp);
     }
 
     private void collapse() {
@@ -136,7 +142,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onAnimationEnd(Animation animation) {
                 buttonLayout.setVisibility(View.GONE);
-                recyclerView.setVisibility(View.GONE);
             }
 
             @Override
@@ -144,6 +149,18 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
 
             }
         }, resource);
+
+        ViewGroup.LayoutParams lp = recyclerView.getLayoutParams();
+        lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.width = toPixels(52);
+        recyclerView.setLayoutParams(lp);
+    }
+
+    private int toPixels(float dp) {
+        DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
+        float fpixels = metrics.density * dp;
+        int pixels = (int) (fpixels + 0.5f);
+        return pixels;
     }
 
     private void animate(final View view, int delay, Animation.AnimationListener listener, int resource) {
